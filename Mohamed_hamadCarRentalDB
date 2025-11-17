@@ -1,0 +1,91 @@
+-- ========================
+-- 1. Mohamed_hamadDB
+-- 2. 15-11-2025
+-- ========================
+PRAGMA foreign_keys = ON;
+
+-- ========================
+-- 1. Clients Table
+-- ========================
+CREATE TABLE Clients (
+    ClientID INTEGER PRIMARY KEY AUTOINCREMENT,
+    First_Name TEXT(50),
+    Last_Name TEXT(50),
+    Gender TEXT CHECK(Gender IN ('Male', 'Female', 'Other')),
+    Email_Address TEXT(100) UNIQUE,
+    Phone_Number TEXT(20),
+    Client_Rating TEXT CHECK(Client_Rating IN ('Poor', 'Average', 'Good', 'Excellent')), -- Ordinal
+    Signup_Date TEXT -- Use TEXT for dates in SQLite, format as YYYY-MM-DD
+);
+
+-- ========================
+-- 2. Vehicles Table
+-- ========================
+CREATE TABLE Vehicles (
+    VehicleID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Brand TEXT(50),
+    Model_Name TEXT(50),
+    Manufacture_Year INTEGER, -- Use INTEGER for year
+    Vehicle_Type TEXT CHECK(Vehicle_Type IN ('SUV', 'Sedan', 'Hatchback', 'Truck', 'Convertible')), -- Nominal
+    Condition_Status TEXT CHECK(Condition_Status IN ('New', 'Good', 'Average', 'Old')), -- Ordinal
+    Mileage_Reading REAL, -- Use REAL for decimal
+    Rental_Price REAL, -- Use REAL for decimal
+    Is_Available INTEGER DEFAULT 1 CHECK(Is_Available IN (0, 1)) -- 1 for TRUE, 0 for FALSE
+);
+
+-- ========================
+-- 3. Branches Table
+-- ========================
+CREATE TABLE Branches (
+    BranchID INTEGER PRIMARY KEY AUTOINCREMENT,
+    City_Name TEXT(50),
+    Street_Address TEXT(150),
+    Zip_Code TEXT(10)
+);
+
+-- ========================
+-- 4. Staff Table
+-- ========================
+CREATE TABLE Staff (
+    StaffID INTEGER PRIMARY KEY AUTOINCREMENT,
+    First_Name TEXT(50),
+    Last_Name TEXT(50),
+    Job_Role TEXT CHECK(Job_Role IN ('Manager', 'Agent', 'Cleaner', 'Technician')),
+    Start_Date TEXT, -- Use TEXT for dates
+    Monthly_Salary REAL -- Use REAL for decimal
+);
+
+-- ========================
+-- 5. Rental_Records Table
+-- ========================
+CREATE TABLE Rental_Records (
+    RecordID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Client_ID INTEGER,
+    Vehicle_ID INTEGER,
+    Staff_ID INTEGER,
+    Pickup_Branch_ID INTEGER,
+    Return_Branch_ID INTEGER,
+    Start_Time TEXT, -- Use TEXT for datetime, format as YYYY-MM-DD HH:MM:SS
+    End_Time TEXT,   -- Use TEXT for datetime
+    Total_Cost REAL, -- Use REAL for decimal
+    FOREIGN KEY (Client_ID) REFERENCES Clients(ClientID),
+    FOREIGN KEY (Vehicle_ID) REFERENCES Vehicles(VehicleID),
+    FOREIGN KEY (Staff_ID) REFERENCES Staff(StaffID),
+    FOREIGN KEY (Pickup_Branch_ID) REFERENCES Branches(BranchID),
+    FOREIGN KEY (Return_Branch_ID) REFERENCES Branches(BranchID)
+);
+
+-- ========================
+-- 6. Transaction Table
+-- ========================
+CREATE TABLE Transaction (
+    TransactionID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Record_ID INTEGER,
+    Payment_Timestamp TEXT, -- Use TEXT for datetime
+    Payment_Type TEXT CHECK(Payment_Type IN ('Credit Card', 'Debit Card', 'Cash', 'Online')), -- Nominal
+    Paid_Amount REAL, -- Use REAL for decimal
+    FOREIGN KEY (Record_ID) REFERENCES Rental_Records(RecordID)
+);
+
+-- Optional compound key (if same vehicle can't be rented twice at same time)
+CREATE UNIQUE INDEX unique_vehicle_rental ON Rental_Records (Vehicle_ID, Start_Time);
